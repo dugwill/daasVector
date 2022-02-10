@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"time"
 )
@@ -16,23 +16,17 @@ func main() {
 		"job": "leader"
 	}`)
 
-	c := NewClient(500*time.Millisecond, false)
-
-	r, err := NewRequest("http://0.0.0.0:9000", jsonData)
+	c, err := NewSocket("tcp", "127.0.0.1:9000")
 	if err != nil {
-		log.Fatalf("Failed creating new request")
+		log.Fatalln("Failed opening connection")
 	}
 
-	response, error := c.Do(r)
-	if error != nil {
-		panic(error)
-	}
-	defer response.Body.Close()
+	fmt.Fprintln(c, bytes.NewBuffer(jsonData))
 
-	fmt.Println("response Status:", response.Status)
-	fmt.Println("response Headers:", response.Header)
-	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println("response Body:", string(body))
+	// wait for reply
+	//message, _ := bufio.NewReader(c).ReadString('\n')
+	//fmt.Print("Message from server: " + message)
+
 }
 
 // NewClient crates a new http client with the provided timeout.
@@ -61,4 +55,13 @@ func NewRequest(url string, d []byte) (*http.Request, error) {
 	req.Header.Set("User-Agent", "scte35Mon/1.0")
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	return req, err
+}
+
+func NewSocket(n, a string) (conn net.Conn, err error) {
+	conn, err = net.Dial(n, a)
+	if err != nil {
+		return nil, err
+	}
+	return
+
 }
