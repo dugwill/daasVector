@@ -11,10 +11,7 @@ import (
 
 func main() {
 
-	var jsonData = []byte(`{
-		"name": "morpheus",
-		"job": "leader"
-	}`)
+	var jsonData = []byte(`{"name":"morpheus","job":"leader"}}`)
 
 	c := NewClient(500*time.Millisecond, false)
 
